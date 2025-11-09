@@ -1,17 +1,25 @@
-const InputError = ({ messages = [], className = '' }) => (
-    <>
-        {messages.length > 0 && (
-            <>
-                {messages.map((message, index) => (
-                    <p
-                        className={`${className} text-sm text-red-600`}
-                        key={index}>
-                        {message}
-                    </p>
-                ))}
-            </>
-        )}
-    </>
-)
+const InputError = ({ messages = [], className = '' }) => {
+    const errorMessages = Array.isArray(messages)
+        ? messages
+        : messages && typeof messages === 'string'
+            ? [messages]
+            : [];
 
-export default InputError
+    return (
+        <>
+            {errorMessages.length > 0 && (
+                <>
+                    {errorMessages.map((message, index) => (
+                        <p
+                            className={`${className} text-sm text-red-600`}
+                            key={index}>
+                            {message}
+                        </p>
+                    ))}
+                </>
+            )}
+        </>
+    );
+};
+
+export default InputError;

@@ -46,6 +46,29 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
         }
     }
 
+    const processErrors = (error) => {
+        const response = error.response?.data
+
+        if (response?.validationErrors) {
+            const errors = {}
+            Object.keys(response.validationErrors).forEach(field => {
+                const errorMessage = response.validationErrors[field]
+                errors[field] = Array.isArray(errorMessage)
+                    ? errorMessage
+                    : [errorMessage]
+            })
+            return errors
+        }
+
+        if (response?.errors) {
+            return response.errors
+        }
+
+        return {
+            general: [response?.message || 'Ocorreu um erro. Tente novamente.']
+        }
+    }
+
     const { data: user, error, mutate } = useSWR('/api/auth/me', () => {
         const token = getToken()
 
@@ -60,99 +83,144 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
                 return res.data
             })
             .catch(error => {
-                if (error.request.status !== 409) throw error
-                router.push('/verify-email')
+                if (error.response?.status === 409) {
+                    router.push('/verify-email')
+                    return
+                }
+                throw error
             })
     })
 
     const register = async ({ setErrors, ...props }) => {
-        setErrors([])
-        axios
-            .post('/api/auth/register', props)
-            .then((response) => {
-                if (response.data.token) {
-                    saveToken(response.data.token)
-                }
-                if (response.data.user) {
-                    saveUserData(response.data.user)
-                }
-                mutate()
-            })
-            .catch(error => {
-                if (error.request.status !== 422) throw error
-                setErrors(error.response.data.errors)
-            })
+        setErrors({})
+
+        try {
+            const response = await axios.post('/api/auth/register', props)
+
+            if (response.data.token) {
+                saveToken(response.data.token)
+            }
+            if (response.data.user) {
+                saveUserData(response.data.user)
+            }
+            mutate()
+        } catch (error) {
+            if (error.response?.status === 422) {
+                setErrors(processErrors(error))
+            } else {
+                setErrors({
+                    general: [error.response?.data?.message || 'Erro ao registrar. Tente novamente.']
+                })
+            }
+        }
     }
 
     const login = async ({ setErrors, setStatus, ...props }) => {
-        setErrors([])
+        setErrors({})
         setStatus(null)
-        axios
-            .post('/api/auth/login', props)
-            .then((response) => {
-                if (response.data.token) {
-                    saveToken(response.data.token)
-                }
-                if (response.data.user) {
-                    saveUserData(response.data.user)
-                }
-                mutate()
-            })
-            .catch(error => {
-                if (error.request.status !== 422) throw error
-                setErrors(error.response.data.errors)
-            })
+
+        try {
+            const response = await axios.post('/api/auth/login', props)
+
+            if (response.data.token) {
+                saveToken(response.data.token)
+            }
+            if (response.data.user) {
+                saveUserData(response.data.user)
+            }
+            mutate()
+        } catch (error) {
+            if (error.response?.status === 422) {
+                setErrors(processErrors(error))
+            } else {
+                setErrors({
+                    general: [error.response?.data?.message || 'Erro ao fazer login. Tente novamente.']
+                })
+            }
+        }
     }
 
     const forgotPassword = async ({ setErrors, setStatus, email }) => {
-        setErrors([])
+        setErrors({})
         setStatus(null)
-        axios
-            .post('/forgot-password', { email })
-            .then(response => setStatus(response.data.status))
-            .catch(error => {
-                if (error.request.status !== 422) throw error
-                setErrors(error.response.data.errors)
-            })
+
+        try {
+            const response = await axios.post('/forgot-password', { email })
+            setStatus(response.data.status)
+        } catch (error) {
+            if (error.response?.status === 422) {
+                setErrors(processErrors(error))
+            } else {
+                setErrors({
+                    general: [error.response?.data?.message || 'Erro ao solicitar recuperação de senha.']
+                })
+            }
+        }
     }
 
     const resetPassword = async ({ setErrors, setStatus, ...props }) => {
-        setErrors([])
+        setErrors({})
         setStatus(null)
-        axios
-            .post('/reset-password', { token: params.token, ...props })
-            .then(response =>
-                router.push('/login?reset=' + btoa(response.data.status)),
-            )
-            .catch(error => {
-                if (error.request.status !== 422) throw error
-                setErrors(error.response.data.errors)
+
+        try {
+            const response = await axios.post('/reset-password', {
+                token: params.token,
+                ...props
             })
+            router.push('/login?reset=' + btoa(response.data.status))
+        } catch (error) {
+            if (error.response?.status === 422) {
+                setErrors(processErrors(error))
+            } else {
+                setErrors({
+                    general: [error.response?.data?.message || 'Erro ao redefinir senha.']
+                })
+            }
+        }
     }
 
-    const resendEmailVerification = ({ setStatus }) => {
+    const resendEmailVerification = async ({ setStatus, setErrors }) => {
         const token = getToken()
 
-        axios
-            .post('/email/verification-notification', {}, {
+        try {
+            const response = await axios.post('/api/auth/resend-email-verification', {}, {
                 headers: token ? {
                     'Authorization': `Bearer ${token}`
                 } : {}
             })
-            .then(response => setStatus(response.data.status))
+            setStatus(response.data.message || 'verification-link-sent')
+        } catch (error) {
+            if (setErrors) {
+                setErrors({
+                    general: [error.response?.data?.message || 'Erro ao reenviar email de verificação.']
+                })
+            }
+        }
+    }
+
+    const verifyEmail = async (token) => {
+        try {
+            const response = await axios.get(`/api/auth/verify-email?token=${token}`, {
+                headers: getToken() ? {
+                    'Authorization': `Bearer ${getToken()}`
+                } : {}
+            })
+
+            mutate()
+
+            return {
+                success: true,
+                data: response.data
+            }
+        } catch (error) {
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Falha na verificação do email'
+            }
+        }
     }
 
     const logout = async () => {
-        if (!error) {
-            const token = getToken()
-
-            await axios.post('/logout', {}, {
-                headers: token ? {
-                    'Authorization': `Bearer ${token}`
-                } : {}
-            }).then(() => mutate())
-        }
-
         removeToken()
         removeUserData()
 
@@ -179,6 +247,7 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
         forgotPassword,
         resetPassword,
         resendEmailVerification,
+        verifyEmail,
         logout,
     }
 }
