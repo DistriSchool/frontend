@@ -99,17 +99,16 @@ const Login = () => {
                     </label>
                 </div>
 
-                <div className="flex items-center justify-end mt-4">
+                <div className="flex flex-col gap-4 items-center justify-end mt-4">
                     <Link
                         href="/forgot-password"
                         className="underline text-sm text-gray-600 hover:text-gray-900">
                         Forgot your password?
                     </Link>
-                    <Button className="ml-3">Login</Button>
+                    <Button className="w-full flex justify-center items-center ">Login</Button>
                 </div>
             </form>
 
-            {/* Divisor e botão de registro */}
             <div className="mt-6">
                 <div className="relative">
                     <div className="absolute inset-0 flex items-center">
