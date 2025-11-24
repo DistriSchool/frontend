@@ -14,7 +14,7 @@ const EditStudentPage = () => {
   const router = useRouter()
   const { student, isLoading, error, mutate } = useStudent(id)
   const { updateStudent, deleteStudent } = useStudents() // reuse mutate after update
-  const [form, setForm] = useState({ fullName: '', dateOfBirth: '', cpf: '' })
+  const [form, setForm] = useState({ fullName: '', dateOfBirth: '', cpf: '', email: '' })
   const [errors, setErrors] = useState({})
 
   useEffect(() => {
@@ -23,6 +23,7 @@ const EditStudentPage = () => {
         fullName: student.fullName || '',
         dateOfBirth: student.dateOfBirth || '',
         cpf: student.cpf || '',
+        email: student.email || '',
       })
     }
   }, [student])
@@ -87,6 +88,11 @@ const EditStudentPage = () => {
                   <Label htmlFor="cpf">CPF</Label>
                   <Input id="cpf" name="cpf" value={form.cpf} onChange={handleChange} className="mt-1 block w-full" />
                   <InputError messages={errors.cpf} className="mt-2" />
+                </div>
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input id="email" name="email" value={form.email} onChange={handleChange} className="mt-1 block w-full" />
+                  <InputError messages={errors.email} className="mt-2" />
                 </div>
                 <InputError messages={errors.general} className="mt-2" />
                 <div className="flex space-x-4">

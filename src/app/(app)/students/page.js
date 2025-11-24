@@ -11,7 +11,7 @@ import Link from 'next/link'
 const StudentsPage = () => {
     const { students, isLoading, createStudent, deleteStudent, pagination } = useStudents()
 
-    const [form, setForm] = useState({ fullName: '', dateOfBirth: '', cpf: '' })
+    const [form, setForm] = useState({ fullName: '', dateOfBirth: '', cpf: '', email: '' })
     const [errors, setErrors] = useState({})
     const [open, setOpen] = useState(false)
 
@@ -23,7 +23,7 @@ const StudentsPage = () => {
         e.preventDefault()
         const res = await createStudent({ setErrors, payload: form })
         if (res.success) {
-            setForm({ fullName: '', dateOfBirth: '', cpf: '' })
+            setForm({ fullName: '', dateOfBirth: '', cpf: '', email: '' })
             setOpen(false)
         }
     }
@@ -59,6 +59,7 @@ const StudentsPage = () => {
                                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
                                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nascimento</th>
                                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CPF</th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                                         <th className="px-4 py-2" />
                                     </tr>
                                 </thead>
@@ -69,6 +70,7 @@ const StudentsPage = () => {
                                             <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{s.fullName}</td>
                                             <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{s.dateOfBirth}</td>
                                             <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{s.cpf}</td>
+                                            <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{s.email}</td>
                                             <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right space-x-3">
                                                 <Link href={`/students/${s.id}`} className="text-indigo-600 hover:text-indigo-900 text-sm">Editar</Link>
                                                 <button
@@ -110,6 +112,11 @@ const StudentsPage = () => {
                                 <Label htmlFor="cpf">CPF</Label>
                                 <Input id="cpf" name="cpf" value={form.cpf} onChange={handleChange} className="mt-1 block w-full" />
                                 <InputError messages={errors.cpf} className="mt-2" />
+                            </div>
+                            <div>
+                                <Label htmlFor="email">Email</Label>
+                                <Input id="email" name="email" value={form.email} onChange={handleChange} className="mt-1 block w-full" />
+                                <InputError messages={errors.email} className="mt-2" />
                             </div>
                             <InputError messages={errors.general} className="mt-2" />
                             <div className="flex justify-end space-x-3">
