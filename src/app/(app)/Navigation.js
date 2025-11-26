@@ -35,11 +35,20 @@ const Navigation = ({ user }) => {
                                 active={usePathname() === '/dashboard'}>
                                 Dashboard
                             </NavLink>
-                            <NavLink
-                                href="/students"
-                                active={usePathname() === '/students'}>
-                                Alunos
-                            </NavLink>
+                            {user.role === 'ADMIN' &&
+                                <>
+                                    <NavLink
+                                        href="/students"
+                                        active={usePathname() === '/students'}>
+                                        Alunos
+                                    </NavLink>
+                                    <NavLink
+                                        href="/teachers"
+                                        active={usePathname() === '/teachers'}>
+                                        Professores
+                                    </NavLink>
+                                </>
+                            }
                         </div>
                     </div>
 

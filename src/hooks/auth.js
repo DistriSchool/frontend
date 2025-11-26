@@ -69,7 +69,7 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
         }
     }
 
-    const { data: user, error, mutate } = useSWR('/api/auth/me', () => {
+    const { data: user, error, mutate, isLoading } = useSWR('/api/auth/me', () => {
         const token = getToken()
 
         return axios
@@ -228,17 +228,23 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
     }
 
     useEffect(() => {
-        if (middleware === 'guest' && redirectIfAuthenticated && user)
+        if (middleware === 'guest' && redirectIfAuthenticated && user) {
             router.push(redirectIfAuthenticated)
-        if (middleware === 'auth' && (user && !user.emailVerified))
+            return
+        }
+
+        if (middleware === 'auth' && !isLoading && user && !user.emailVerified) {
             router.push('/verify-email')
-        if (
-            window.location.pathname === '/verify-email' &&
-            user?.emailVerified
-        )
+            return
+        }
+
+        if (window.location.pathname === '/verify-email' && !isLoading && user?.emailVerified) {
             router.push(redirectIfAuthenticated)
+            return
+        }
+
         if (middleware === 'auth' && error) logout()
-    }, [user, error])
+    }, [user, error, isLoading])
 
     return {
         user,

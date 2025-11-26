@@ -1,6 +1,6 @@
 'use client'
 import Header from '@/app/(app)/Header'
-import { useStudents } from '@/hooks/students'
+import { useTeachers } from '@/hooks/teachers'
 import { useState, useEffect } from 'react'
 import Input from '@/components/Input'
 import Label from '@/components/Label'
@@ -11,8 +11,8 @@ import { useAuth } from '@/hooks/auth'
 import Loading from '@/app/(app)/Loading'
 import { useRouter } from 'next/navigation'
 
-const StudentsPage = () => {
-    const { students, isLoading, createStudent, deleteStudent, pagination } = useStudents()
+const TeachersPage = () => {
+    const { teachers, isLoading, createTeacher, deleteTeacher, pagination } = useTeachers()
     const { user } = useAuth()
     const router = useRouter()
 
@@ -36,7 +36,7 @@ const StudentsPage = () => {
 
     const handleSubmit = async e => {
         e.preventDefault()
-        const res = await createStudent({ setErrors, payload: form })
+        const res = await createTeacher({ setErrors, payload: form })
         if (res.success) {
             setForm({ fullName: '', dateOfBirth: '', cpf: '', email: '' })
             setOpen(false)
@@ -45,7 +45,7 @@ const StudentsPage = () => {
 
     return (
         <>
-            <Header title="Alunos" />
+            <Header title="Professors" />
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
@@ -58,15 +58,15 @@ const StudentsPage = () => {
                                 ) : null}
                             </div>
                             <Button type="button" onClick={() => setOpen(true)}>
-                                Criar aluno
+                                Criar professor
                             </Button>
                         </div>
 
                         {isLoading && <div>Carregando...</div>}
-                        {!isLoading && students.length === 0 && (
-                            <div>Nenhum aluno cadastrado.</div>
+                        {!isLoading && teachers.length === 0 && (
+                            <div>Nenhum professor cadastrado.</div>
                         )}
-                        {!isLoading && students.length > 0 && (
+                        {!isLoading && teachers.length > 0 && (
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead>
                                     <tr>
@@ -79,7 +79,7 @@ const StudentsPage = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {students.map(s => (
+                                    {teachers.map(s => (
                                         <tr key={s.id}>
                                             <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{s.registrationNumber}</td>
                                             <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{s.fullName}</td>
@@ -87,9 +87,9 @@ const StudentsPage = () => {
                                             <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{s.cpf}</td>
                                             <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">{s.email}</td>
                                             <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 text-right space-x-3">
-                                                <Link href={`/students/${s.id}`} className="text-indigo-600 hover:text-indigo-900 text-sm">Editar</Link>
+                                                <Link href={`/teachers/${s.id}`} className="text-indigo-600 hover:text-indigo-900 text-sm">Editar</Link>
                                                 <button
-                                                    onClick={() => deleteStudent(s.id)}
+                                                    onClick={() => deleteTeacher(s.id)}
                                                     className="text-red-600 hover:text-red-900 text-sm"
                                                 >
                                                     Remover
@@ -109,7 +109,7 @@ const StudentsPage = () => {
                     <div className="absolute inset-0 bg-black/30" onClick={() => setOpen(false)} />
                     <div className="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-auto p-6">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-medium text-gray-900">Criar aluno</h3>
+                            <h3 className="text-lg font-medium text-gray-900">Criar professor</h3>
                             <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-600">✕</button>
                         </div>
                         <form onSubmit={handleSubmit} className="space-y-4">
@@ -146,4 +146,4 @@ const StudentsPage = () => {
     )
 }
 
-export default StudentsPage
+export default TeachersPage
